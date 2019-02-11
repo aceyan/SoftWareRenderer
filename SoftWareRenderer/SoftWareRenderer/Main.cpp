@@ -15,30 +15,30 @@
 #define SCREEN_WIDTH 600
 #define SCREEN_HEIGHT 600
 #define PI 3.1415926
-//主窗口的HDC和handle
+//绘制所需要的系统组件
 static HDC screen_hdc;
-static HDC hCompatibleDC; //兼容HDC
-static HBITMAP hCompatibleBitmap; //兼容BITMAP
-static HBITMAP hOldBitmap; //旧的BITMAP				  
-static BITMAPINFO binfo; //BITMAPINFO结构体
+static HDC hCompatibleDC; 
+static HBITMAP hCompatibleBitmap;
+static HBITMAP hOldBitmap;	  
+static BITMAPINFO binfo;
 
-//GDIplus库
-Gdiplus::Bitmap* texture;
+Gdiplus::Bitmap* texture;//贴图纹理
 int textureWidth;
 int textureHeight;
 
-float zBuff[SCREEN_HEIGHT][SCREEN_WIDTH];
-CubeMeshData mesh;
+float zBuff[SCREEN_HEIGHT][SCREEN_WIDTH];//保存像素的z信息，用于深度测试
+CubeMeshData mesh;//cube的数据
 Light light;
 Camera camera;
 Color ambient;//全局环境光颜色 
-float rot = 0;
+float rot = 0;//cube旋转弧度
+float rotationSpeed = 0.03;//cube旋转速度
 //
 RenderMode currentMode;//渲染模式
 LightMode lightMode;//光照模式
 TextureFilterMode textureFilterMode;//纹理采样模式
-BYTE *textureBuffer;
-BYTE *backBuffer;  //每三个byte为一个像素，总共有800*600个像素，800*600*3个byte,BGR的颜色存储顺序,
+BYTE *textureBuffer;//保存纹理rgb数据
+BYTE *backBuffer;  //每三个byte为一个像素
 
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
@@ -86,7 +86,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	hwnd = CreateWindow(L"SoftWareRenderer", WINDOW_TITLE, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, SCREEN_WIDTH, SCREEN_HEIGHT, NULL, NULL, hInstance, NULL);
 	Init(hwnd);
 
-	//注意客户区(屏幕)的大小和窗口的大小是不一样的
 	MoveWindow(hwnd, 250, 80, SCREEN_WIDTH, SCREEN_HEIGHT, true);
 
 	ShowWindow(hwnd, nShowCmd);
@@ -94,7 +93,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 
 
-	//【5】消息循环msg
 	MSG msg = { 0 };
 	while (msg.message != WM_QUIT)
 	{
@@ -106,19 +104,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		else
 		{
 
+			//清理zbuff和backbuff
 			ZeroMemory(&zBuff, sizeof(zBuff));
-			ClearBackBuffer(0, 100, 100);
+			ClearBackBuffer(100, 100, 100);
 
-
-			rot += 0.05;
-
+			//生成m，v，p矩阵
+			rot += rotationSpeed;
 			Matrix4x4 m = MathTools::GetRotateX(rot) * MathTools::GetRotateY(rot) * MathTools::GetTranslate(0, 0, 10);
-
 			Matrix4x4 v = MathTools::GetView(camera.pos, camera.lookAt, camera.up);
 			Matrix4x4 p = MathTools::GetProjection(camera.fov, camera.aspect, camera.zn, camera.zf);
-
 			//
-			Draw(m, v, p);
+			Draw(m, v, p);//使用m，v，p矩阵，将cube绘制到backbuff
 			//
 			SetDIBits(screen_hdc, hCompatibleBitmap, 0, SCREEN_HEIGHT, backBuffer, (BITMAPINFO*)&binfo, DIB_RGB_COLORS);
 			BitBlt(screen_hdc, -1, -1, SCREEN_WIDTH, SCREEN_HEIGHT, hCompatibleDC, 0, 0, SRCCOPY);
@@ -134,9 +130,9 @@ void ClearBackBuffer(byte r, byte g, byte b)
 	for (int i = 0; i < SCREEN_HEIGHT*SCREEN_WIDTH; ++i)
 	{
 
-		backBuffer[i * 3 + 0] = b;
+		backBuffer[i * 3 + 0] = r;
 		backBuffer[i * 3 + 1] = g;
-		backBuffer[i * 3 + 2] = r;
+		backBuffer[i * 3 + 2] = b;
 	}
 }
 
@@ -150,7 +146,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		break;
 
 	case WM_KEYDOWN:
-		if (wParam == VK_UP)
+		if (unsigned int(wParam) == 'Q')
 		{
 			if (currentMode == RenderMode::Textured)
 			{
@@ -166,7 +162,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			}
 		}
 
-		if (wParam == VK_DOWN)
+		if (unsigned int(wParam) == 'W')
 		{
 			if (lightMode == LightMode::On)
 			{
@@ -178,7 +174,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			}
 		}
 
-		if (wParam == VK_LEFT)
+		if (unsigned int(wParam) == 'E')
 		{
 			if (textureFilterMode == TextureFilterMode::Bilinear)
 			{
@@ -191,7 +187,19 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		}
 
 
-		//按下退出键则毁掉窗口
+		if (wParam == VK_UP)
+		{
+			rotationSpeed += 0.005;
+		}
+		else if (wParam == VK_DOWN)
+		{
+			rotationSpeed -= 0.005;
+			if (rotationSpeed < 0)
+			{
+				rotationSpeed = 0;
+			}
+		}
+
 		if (wParam == VK_ESCAPE)
 			DestroyWindow(hwnd);
 		break;
@@ -216,12 +224,10 @@ void Init(HWND hwnd)
 {
 	RECT rect = { 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT };
 
-	//由屏幕大小获取窗口的大小
 	AdjustWindowRect(&rect, GetWindowLong(hwnd, GWL_STYLE), 0);
 
-	//填充结构体
 	ZeroMemory(&binfo, sizeof(BITMAPINFO));
-	binfo.bmiHeader.biBitCount = 24;      //每个像素多少位，也可直接写24(RGB)或者32(RGBA)
+	binfo.bmiHeader.biBitCount = 24;      //设置像素为24位
 	binfo.bmiHeader.biCompression = BI_RGB;
 	binfo.bmiHeader.biHeight = -SCREEN_HEIGHT;
 	binfo.bmiHeader.biPlanes = 1;
@@ -232,26 +238,19 @@ void Init(HWND hwnd)
 	//获取屏幕HDC
 	screen_hdc = GetDC(hwnd);
 
-	//获取兼容HDC和兼容Bitmap,兼容Bitmap选入兼容HDC(每个HDC内存每时刻仅能选入一个GDI资源,GDI资源要选入HDC才能进行绘制)
 	hCompatibleDC = CreateCompatibleDC(screen_hdc);
 	hCompatibleBitmap = CreateCompatibleBitmap(screen_hdc, SCREEN_WIDTH, SCREEN_HEIGHT);
 	hOldBitmap = (HBITMAP)SelectObject(hCompatibleDC, hCompatibleBitmap);
 
-
-
-	//从外部加载纹理数据
+	//从Texture文件夹加载纹理数据
 	LoadTexture(wstring(L"Texture/MyTexture.jpg"));
-
 	backBuffer = new byte[SCREEN_WIDTH*SCREEN_HEIGHT* 24 / 8];
 
-	
 	currentMode = RenderMode::Textured;
 	lightMode = LightMode::On;
 	textureFilterMode = TextureFilterMode::Bilinear;
-	//
-	
+	//定义环境光
 	ambient = Color(255, 255, 255);
-
 	//定义光照
 	light = Light(Vector3D(0, 0, 0), Color(255, 255, 255));
 	//定义相机
@@ -282,10 +281,8 @@ void LoadTexture(wstring TexureFilename)
 	{
 		for (int j = 0; j <textureWidth; ++j)
 		{
-			//获取相应数组[j][i]的像素,注意这里下标从0开始
 			texture->GetPixel(j, i, &color);
-
-			//将像素的颜色输入纹理缓存,注意颜色的顺序应该是BGR
+			//将像素的颜色写入纹理缓存,注意颜色的顺序应该是rgb
 			textureBuffer[i * textureWidth * 3 + (j + 1) * 3 - 1] = color.GetR();
 			textureBuffer[i * textureWidth * 3 + (j + 1) * 3 - 2] = color.GetG();
 			textureBuffer[i * textureWidth * 3 + (j + 1) * 3 - 3] = color.GetB();
@@ -293,7 +290,6 @@ void LoadTexture(wstring TexureFilename)
 	}
 
 	Gdiplus::GdiplusShutdown(gdiplustoken);
-
 
 }
 
@@ -609,82 +605,74 @@ void ScanlineFill(Vertex left, Vertex right, int yIndex)
 			if (onePreZ >= zBuff[yIndex][xIndex])//使用1/z进行深度测试
 			{//通过测试
 				
-				float w = 1 / onePreZ;
 				zBuff[yIndex][xIndex] = onePreZ;
+
+				float w = 1 / onePreZ;
+
 				//uv 插值，求纹理颜色
 				float u = MathTools::Lerp(left.u, right.u, lerpFactor) * w * (textureWidth - 1);
 				float v = MathTools::Lerp(left.v, right.v, lerpFactor) * w * (textureHeight - 1);
 				//纹理采样
-				Color texColor(255,255,255);
+				Color texColor;
 				Gdiplus::Color textureColor;
-				
+				Color finalColor;
 
-				
-
-				if (textureFilterMode == TextureFilterMode::point)
-				{//点采样
-					
-					int uIndex = (int)round(u+0.5);
-					int vIndex = (int)round(v+0.5);
-					uIndex = MathTools::Range(uIndex, 0, textureWidth - 1);
-					vIndex = MathTools::Range(vIndex, 0, textureHeight - 1);
-					//uv坐标系采用dx风格
-					texColor = ReadTexture(uIndex, vIndex, &textureColor);//转到我们自定义的color进行计算
-					
-				}
-				else if (textureFilterMode == TextureFilterMode::Bilinear)
-				{//双线性采样
-					float uIndex = (float)floor(u);
-					float vIndex = (float)floor(v);
-					float du = u - uIndex;
-					float dv = v - vIndex;
-
-					Color texcolor1 = ReadTexture((int)uIndex, (int)vIndex, &textureColor) * (1 - du) * (1 - dv);
-					Color texcolor2 = ReadTexture((int)uIndex + 1, (int)vIndex, &textureColor) * du * (1 - dv);
-					Color texcolor3 = ReadTexture((int)uIndex, (int)vIndex + 1, &textureColor) * (1 - du) * dv;
-					Color texcolor4 = ReadTexture((int)uIndex + 1, (int)vIndex + 1, &textureColor) * du * dv;
-					texColor = texcolor1 + texcolor2 + texcolor3 + texcolor4;
-				}
-				
-
-				
-
-				//插值顶点颜色
-				Color vertColor = MathTools::Lerp(left.vcolor, right.vcolor, lerpFactor) * w;
-				//插值光照颜色
-				Color lightColor = MathTools::Lerp(left.lightingColor, right.lightingColor, lerpFactor) * w;
-
-
-				if (lightMode == LightMode::On)
-				{//光照模式，需要混合光照的颜色
-					if (RenderMode::Textured == currentMode)
-					{
-						Color finalColor = texColor * lightColor;
-						//frameBuff->SetPixel(xIndex, yIndex, TransFormToGdiColor(finalColor));
-						SetBackBuff(xIndex, yIndex, TransFormToGdiColor(finalColor));
-					}
-					else if (RenderMode::VertexColor == currentMode)
-					{
-						Color finalColor = vertColor * lightColor;
-						//frameBuff->SetPixel(xIndex, yIndex, TransFormToGdiColor(finalColor));
-						SetBackBuff(xIndex, yIndex, TransFormToGdiColor(finalColor));
-					}
-				}
-				else
+				if (RenderMode::Textured == currentMode)
 				{
-					if (RenderMode::Textured == currentMode)
-					{
-						//frameBuff->SetPixel(xIndex, yIndex, TransFormToGdiColor(texColor));
-						SetBackBuff(xIndex, yIndex, TransFormToGdiColor(texColor));
+					if (textureFilterMode == TextureFilterMode::point)
+					{//点采样
+
+						int uIndex = (int)round(u + 0.5);
+						int vIndex = (int)round(v + 0.5);
+						uIndex = MathTools::Range(uIndex, 0, textureWidth - 1);
+						vIndex = MathTools::Range(vIndex, 0, textureHeight - 1);
+						//uv坐标系采用dx风格
+						texColor = ReadTexture(uIndex, vIndex, &textureColor);//转到我们自定义的color进行计算
+
 					}
-					else if (RenderMode::VertexColor == currentMode)
+					else if (textureFilterMode == TextureFilterMode::Bilinear)
+					{//双线性采样
+						float uIndex = (float)floor(u);
+						float vIndex = (float)floor(v);
+						float du = u - uIndex;
+						float dv = v - vIndex;
+
+						Color texcolor1 = ReadTexture((int)uIndex, (int)vIndex, &textureColor) * (1 - du) * (1 - dv);
+						Color texcolor2 = ReadTexture((int)uIndex + 1, (int)vIndex, &textureColor) * du * (1 - dv);
+						Color texcolor3 = ReadTexture((int)uIndex, (int)vIndex + 1, &textureColor) * (1 - du) * dv;
+						Color texcolor4 = ReadTexture((int)uIndex + 1, (int)vIndex + 1, &textureColor) * du * dv;
+						texColor = texcolor1 + texcolor2 + texcolor3 + texcolor4;
+					}
+					if (lightMode == LightMode::On)
 					{
-						//frameBuff->SetPixel(xIndex, yIndex, TransFormToGdiColor(vertColor));
-						SetBackBuff(xIndex, yIndex, TransFormToGdiColor(vertColor));
+						//插值光照颜色
+						Color lightColor = MathTools::Lerp(left.lightingColor, right.lightingColor, lerpFactor) * w;
+						finalColor = texColor * lightColor;
+					}
+					else
+					{
+						finalColor = texColor;
 					}
 				}
+				else if (RenderMode::VertexColor == currentMode)
+				{
+					//插值顶点颜色
+					Color vertColor = MathTools::Lerp(left.vcolor, right.vcolor, lerpFactor) * w;
+					if (lightMode == LightMode::On)
+					{
+						//插值光照颜色
+						Color lightColor = MathTools::Lerp(left.lightingColor, right.lightingColor, lerpFactor) * w;
+						finalColor = vertColor * lightColor;
+					}
+					else
+					{
+						finalColor = vertColor;
+					}
+					
+				}
 				
-
+				SetBackBuff(xIndex, yIndex, TransFormToGdiColor(finalColor));
+				
 			}
 		}
 	}
@@ -798,18 +786,12 @@ Color ReadTexture(int uIndex, int vIndex, Gdiplus::Color *color)
 {
 	int u = MathTools::Range(uIndex, 0, textureWidth - 1);
 	int v = MathTools::Range(vIndex, 0, textureHeight- 1);
-	//texture->GetPixel(u, v, color);
 
-	byte r = textureBuffer[v * textureWidth * 3 + (u + 1) * 3 - 1];
+	byte r = textureBuffer[v* textureWidth * 3 + (u + 1) * 3 - 3];
 	byte g = textureBuffer[v* textureWidth * 3 + (u + 1) * 3 - 2];
-	byte b = textureBuffer[v* textureWidth * 3 + (u + 1) * 3 - 3];
+	byte b = textureBuffer[v * textureWidth * 3 + (u + 1) * 3 - 1];
 
-
-	//byte r = color->GetR();
-	//byte g = color->GetG();
-	//byte b = color->GetB();
 	return Color(r , g , b );
-
 
 }
 
@@ -824,9 +806,9 @@ Gdiplus::Color TransFormToGdiColor(Color color)
 
 void SetBackBuff(int uIndex, int vIndex, Gdiplus::Color color)
 {
-	backBuffer[vIndex *  SCREEN_WIDTH * 3 + (uIndex + 1) * 3 - 1] = color.GetR();
+	backBuffer[vIndex * SCREEN_WIDTH * 3 + (uIndex + 1) * 3 - 3] = color.GetR();
 	backBuffer[vIndex *  SCREEN_WIDTH * 3 + (uIndex + 1) * 3 - 2] = color.GetG();
-	backBuffer[vIndex * SCREEN_WIDTH * 3 + (uIndex + 1) * 3 - 3] = color.GetB();
+	backBuffer[vIndex *  SCREEN_WIDTH * 3 + (uIndex + 1) * 3 - 1] = color.GetB();
 }
 
 

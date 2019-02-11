@@ -1,17 +1,7 @@
-﻿生成启动时间为 2019/2/11 21:42:16。
+﻿生成启动时间为 2019/2/11 23:50:01。
      1>项目“C:\Users\woait\Desktop\C++Render\SoftWareRenderer\SoftWareRenderer\SoftWareRenderer\SoftWareRenderer.vcxproj”在节点 2 上(Build 个目标)。
      1>ClCompile:
-         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /Zi /nologo /W3 /WX- /O2 /Oi /Oy- /GL /D WIN32 /D NDEBUG /D _WINDOWS /D _UNICODE /D UNICODE /Gm- /EHsc /MD /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Release\\" /Fd"Release\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt MathTools.cpp Matrix4x4.cpp Main.cpp
-         MathTools.cpp
-     1>c:\users\woait\desktop\c++render\softwarerenderer\softwarerenderer\softwarerenderer\Color.h(9): warning C4244: “初始化”: 从“float”转换到“byte”，可能丢失数据
-     1>c:\users\woait\desktop\c++render\softwarerenderer\softwarerenderer\softwarerenderer\Color.h(10): warning C4244: “初始化”: 从“float”转换到“byte”，可能丢失数据
-     1>c:\users\woait\desktop\c++render\softwarerenderer\softwarerenderer\softwarerenderer\Color.h(11): warning C4244: “初始化”: 从“float”转换到“byte”，可能丢失数据
-     1>c:\users\woait\desktop\c++render\softwarerenderer\softwarerenderer\softwarerenderer\Color.h(30): warning C4244: “初始化”: 从“float”转换到“int”，可能丢失数据
-     1>c:\users\woait\desktop\c++render\softwarerenderer\softwarerenderer\softwarerenderer\Color.h(31): warning C4244: “初始化”: 从“float”转换到“int”，可能丢失数据
-     1>c:\users\woait\desktop\c++render\softwarerenderer\softwarerenderer\softwarerenderer\Color.h(32): warning C4244: “初始化”: 从“float”转换到“int”，可能丢失数据
-     1>c:\users\woait\desktop\c++render\softwarerenderer\softwarerenderer\softwarerenderer\Color.h(67): warning C4244: “return”: 从“float”转换到“byte”，可能丢失数据
-     1>c:\users\woait\desktop\c++render\softwarerenderer\softwarerenderer\softwarerenderer\MathTools.h(23): warning C4091: “static ”: 没有声明变量时忽略“MathTools”的左侧
-         Matrix4x4.cpp
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /Zi /nologo /W3 /WX- /O2 /Oi /Oy- /GL /D WIN32 /D NDEBUG /D _WINDOWS /D _UNICODE /D UNICODE /Gm- /EHsc /MD /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Release\\" /Fd"Release\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt Main.cpp Matrix4x4.cpp
          Main.cpp
      1>c:\users\woait\desktop\c++render\softwarerenderer\softwarerenderer\softwarerenderer\Color.h(9): warning C4244: “初始化”: 从“float”转换到“byte”，可能丢失数据
      1>c:\users\woait\desktop\c++render\softwarerenderer\softwarerenderer\softwarerenderer\Color.h(10): warning C4244: “初始化”: 从“float”转换到“byte”，可能丢失数据
@@ -20,11 +10,14 @@
      1>c:\users\woait\desktop\c++render\softwarerenderer\softwarerenderer\softwarerenderer\Color.h(31): warning C4244: “初始化”: 从“float”转换到“int”，可能丢失数据
      1>c:\users\woait\desktop\c++render\softwarerenderer\softwarerenderer\softwarerenderer\Color.h(32): warning C4244: “初始化”: 从“float”转换到“int”，可能丢失数据
      1>c:\users\woait\desktop\c++render\softwarerenderer\softwarerenderer\softwarerenderer\Color.h(67): warning C4244: “return”: 从“float”转换到“byte”，可能丢失数据
-     1>c:\users\woait\desktop\c++render\softwarerenderer\softwarerenderer\softwarerenderer\CubeMeshData.h(115): warning C4244: “参数”: 从“float”转换到“byte”，可能丢失数据
-     1>c:\users\woait\desktop\c++render\softwarerenderer\softwarerenderer\softwarerenderer\MathTools.h(23): warning C4091: “static ”: 没有声明变量时忽略“MathTools”的左侧
-     1>Main.cpp(113): warning C4305: “+=”: 从“double”到“float”截断
-     1>Main.cpp(373): warning C4018: “<”: 有符号/无符号不匹配
-     1>Main.cpp(822): warning C4244: “参数”: 从“float”转换到“BYTE”，可能丢失数据
+     1>c:\users\woait\desktop\c++render\softwarerenderer\softwarerenderer\softwarerenderer\CubeMeshData.h(116): warning C4244: “参数”: 从“float”转换到“byte”，可能丢失数据
+     1>c:\users\woait\desktop\c++render\softwarerenderer\softwarerenderer\softwarerenderer\MathTools.h(24): warning C4091: “static ”: 没有声明变量时忽略“MathTools”的左侧
+     1>Main.cpp(35): warning C4305: “初始化”: 从“double”到“float”截断
+     1>Main.cpp(192): warning C4305: “+=”: 从“double”到“float”截断
+     1>Main.cpp(196): warning C4305: “-=”: 从“double”到“float”截断
+     1>Main.cpp(369): warning C4018: “<”: 有符号/无符号不匹配
+     1>Main.cpp(804): warning C4244: “参数”: 从“float”转换到“BYTE”，可能丢失数据
+         Matrix4x4.cpp
        Link:
          C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\woait\Desktop\C++Render\SoftWareRenderer\SoftWareRenderer\Release\SoftWareRenderer.exe" /INCREMENTAL:NO /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\woait\Desktop\C++Render\SoftWareRenderer\SoftWareRenderer\Release\SoftWareRenderer.pdb" /SUBSYSTEM:WINDOWS /OPT:REF /OPT:ICF /LTCG /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\woait\Desktop\C++Render\SoftWareRenderer\SoftWareRenderer\Release\SoftWareRenderer.lib" /MACHINE:X86 /SAFESEH Release\MathTools.obj
          Release\Matrix4x4.obj
@@ -36,4 +29,4 @@
 
 生成成功。
 
-已用时间 00:00:03.24
+已用时间 00:00:04.93

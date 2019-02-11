@@ -3,14 +3,9 @@
 #include"Color.h"
 struct Light
 {
-	/// <summary>
-	/// 灯光时间坐标
-	/// </summary>
-	Vector3D worldPosition;
-	/// <summary>
-	/// 灯光颜色
-	/// </summary>
-	Color lightColor;
+	
+	Vector3D worldPosition;//灯光世界坐标
+	Color lightColor;//灯光颜色
 	Light(){};
 	Light(Vector3D wp, Color lc)
 	{

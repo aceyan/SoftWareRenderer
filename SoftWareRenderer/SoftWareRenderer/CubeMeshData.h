@@ -5,6 +5,7 @@
 #include"Vector3D.h"
 #include<vector>
 using namespace std;
+//定义一个cube的数据
 struct CubeMeshData
 {
 public:
@@ -117,7 +118,7 @@ public:
 	 };
 
 	 vector<Vertex> verts;
-	 Material material = Material(Color(10, 10, 10), 0.1f, Color(150, 150, 150), Color(255, 255, 255), 20);
+	 Material material = Material(Color(10, 10, 10), 0.1f, Color(120, 120, 120), Color(255, 255, 255), 30);
 
 	
 };
