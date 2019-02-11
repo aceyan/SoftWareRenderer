@@ -4,8 +4,8 @@
 struct Light
 {
 	
-	Vector3D worldPosition;//灯光世界坐标
-	Color lightColor;//灯光颜色
+	Vector3D worldPosition;//The world position of the light
+	Color lightColor;//color of the light
 	Light(){};
 	Light(Vector3D wp, Color lc)
 	{

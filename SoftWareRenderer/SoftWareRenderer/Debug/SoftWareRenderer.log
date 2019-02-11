@@ -1,22 +1,9 @@
-﻿生成启动时间为 2019/2/11 23:49:40。
+﻿生成启动时间为 2019/2/12 2:05:10。
      1>项目“C:\Users\woait\Desktop\C++Render\SoftWareRenderer\SoftWareRenderer\SoftWareRenderer\SoftWareRenderer.vcxproj”在节点 2 上(Build 个目标)。
      1>ClCompile:
          C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _DEBUG /D _WINDOWS /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt Main.cpp
          Main.cpp
-     1>c:\users\woait\desktop\c++render\softwarerenderer\softwarerenderer\softwarerenderer\color.h(9): warning C4244: “初始化”: 从“float”转换到“byte”，可能丢失数据
-     1>c:\users\woait\desktop\c++render\softwarerenderer\softwarerenderer\softwarerenderer\color.h(10): warning C4244: “初始化”: 从“float”转换到“byte”，可能丢失数据
-     1>c:\users\woait\desktop\c++render\softwarerenderer\softwarerenderer\softwarerenderer\color.h(11): warning C4244: “初始化”: 从“float”转换到“byte”，可能丢失数据
-     1>c:\users\woait\desktop\c++render\softwarerenderer\softwarerenderer\softwarerenderer\color.h(30): warning C4244: “初始化”: 从“float”转换到“int”，可能丢失数据
-     1>c:\users\woait\desktop\c++render\softwarerenderer\softwarerenderer\softwarerenderer\color.h(31): warning C4244: “初始化”: 从“float”转换到“int”，可能丢失数据
-     1>c:\users\woait\desktop\c++render\softwarerenderer\softwarerenderer\softwarerenderer\color.h(32): warning C4244: “初始化”: 从“float”转换到“int”，可能丢失数据
-     1>c:\users\woait\desktop\c++render\softwarerenderer\softwarerenderer\softwarerenderer\color.h(67): warning C4244: “return”: 从“float”转换到“byte”，可能丢失数据
-     1>c:\users\woait\desktop\c++render\softwarerenderer\softwarerenderer\softwarerenderer\cubemeshdata.h(116): warning C4244: “参数”: 从“float”转换到“byte”，可能丢失数据
      1>c:\users\woait\desktop\c++render\softwarerenderer\softwarerenderer\softwarerenderer\mathtools.h(24): warning C4091: “static ”: 没有声明变量时忽略“MathTools”的左侧
-     1>c:\users\woait\desktop\c++render\softwarerenderer\softwarerenderer\softwarerenderer\main.cpp(35): warning C4305: “初始化”: 从“double”到“float”截断
-     1>c:\users\woait\desktop\c++render\softwarerenderer\softwarerenderer\softwarerenderer\main.cpp(192): warning C4305: “+=”: 从“double”到“float”截断
-     1>c:\users\woait\desktop\c++render\softwarerenderer\softwarerenderer\softwarerenderer\main.cpp(196): warning C4305: “-=”: 从“double”到“float”截断
-     1>c:\users\woait\desktop\c++render\softwarerenderer\softwarerenderer\softwarerenderer\main.cpp(369): warning C4018: “<”: 有符号/无符号不匹配
-     1>c:\users\woait\desktop\c++render\softwarerenderer\softwarerenderer\softwarerenderer\main.cpp(804): warning C4244: “参数”: 从“float”转换到“BYTE”，可能丢失数据
        Link:
          C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\woait\Desktop\C++Render\SoftWareRenderer\SoftWareRenderer\Debug\SoftWareRenderer.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\woait\Desktop\C++Render\SoftWareRenderer\SoftWareRenderer\Debug\SoftWareRenderer.pdb" /SUBSYSTEM:WINDOWS /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\woait\Desktop\C++Render\SoftWareRenderer\SoftWareRenderer\Debug\SoftWareRenderer.lib" /MACHINE:X86 /PROFILE Debug\MathTools.obj
          Debug\Matrix4x4.obj
@@ -28,4 +15,4 @@
 
 生成成功。
 
-已用时间 00:00:03.19
+已用时间 00:00:02.18

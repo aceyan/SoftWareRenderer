@@ -57,16 +57,16 @@ Matrix4x4  MathTools::GetRotateZ(float r)
 
 Matrix4x4 MathTools::GetView(Vector3D pos, Vector3D lookAt, Vector3D up)
 {
-	//视线方向
+	//direction of camera
 	Vector3D dir = lookAt - pos;
 	Vector3D right = Vector3D::Cross(up, dir);
 	right.Normalize();
-	//平移部分
+	//
 	Matrix4x4 t =  Matrix4x4(1, 0, 0, 0,
 		0, 1, 0, 0,
 		0, 0, 1, 0,
 		-pos.x, -pos.y, -pos.z, 1);
-	//旋转部分
+	//
 	Matrix4x4 r =  Matrix4x4(right.x, up.x, dir.x, 0,
 		right.y, up.y, dir.y, 0,
 		right.z, up.z, dir.z, 0,

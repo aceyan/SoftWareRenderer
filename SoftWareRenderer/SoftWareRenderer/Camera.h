@@ -3,13 +3,13 @@
 struct Camera
 {
 public:
-	Vector3D pos;//摄像机位置
-	Vector3D lookAt;//摄像机方向
-	Vector3D up;//上方向
-	float fov; //观察角，弧度
-	float aspect;//长宽比
-	float zn;//近裁平面
-	float zf;//远裁平面
+	Vector3D pos;//Camera position
+	Vector3D lookAt;//Camera direction
+	Vector3D up;//the up direction
+	float fov; // Observation Angle (in radian)
+	float aspect;//Aspect ratio
+	float zn;//near  plane
+	float zf;//far plane
 	Camera(){};
 	Camera(Vector3D pos, Vector3D lookAt, Vector3D up, float fov, float aspect, float zn, float zf) :pos(pos), lookAt(lookAt), up(up), fov(fov), aspect(aspect), zn(zn), zf(zf)
 	{

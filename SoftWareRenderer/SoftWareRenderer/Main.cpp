@@ -15,53 +15,53 @@
 #define SCREEN_WIDTH 600
 #define SCREEN_HEIGHT 600
 #define PI 3.1415926
-//绘制所需要的系统组件
+// required system components
 static HDC screen_hdc;
 static HDC hCompatibleDC; 
 static HBITMAP hCompatibleBitmap;
 static HBITMAP hOldBitmap;	  
 static BITMAPINFO binfo;
 
-Gdiplus::Bitmap* texture;//贴图纹理
+Gdiplus::Bitmap* texture;
 int textureWidth;
 int textureHeight;
 
-float zBuff[SCREEN_HEIGHT][SCREEN_WIDTH];//保存像素的z信息，用于深度测试
-CubeMeshData mesh;//cube的数据
+float zBuff[SCREEN_HEIGHT][SCREEN_WIDTH];//Saving the z information of the pixel for depth testing
+CubeMeshData mesh;//data of a cube
 Light light;
 Camera camera;
-Color ambient;//全局环境光颜色 
-float rot = 0;//cube旋转弧度
-float rotationSpeed = 0.03;//cube旋转速度
+Color ambient;//Global ambient light color
+float rot = 0;//Cube rotation
+float rotationSpeed = 0.03f;//cube rotation speed
 //
-RenderMode currentMode;//渲染模式
-LightMode lightMode;//光照模式
-TextureFilterMode textureFilterMode;//纹理采样模式
-BYTE *textureBuffer;//保存纹理rgb数据
-BYTE *backBuffer;  //每三个byte为一个像素
+RenderMode currentMode;
+LightMode lightMode;
+TextureFilterMode textureFilterMode;
+BYTE *textureBuffer;//Saving the texture RGB data
+BYTE *backBuffer;  //saving color information of backbuff, every three bytes is a pixel
 
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
-void Init(HWND hwnd);//初始化组件
-void LoadTexture(wstring TexureFilename);//从文件中加载texture
+void Init(HWND hwnd);//Initialize components
+void LoadTexture(wstring TexureFilename);//Load texture from a file
 
-void SetMVTransform(Matrix4x4 m, Matrix4x4 v, Vertex &vertex);//从模型空间转换到view space
-void SetProjectionTransform(Matrix4x4 p, Vertex &vertex);//进行投影变换
-bool Clip(Vertex v);//裁剪
-void TransformToScreen(Vertex &v);//转换到屏幕空间
-bool BackFaceCulling(Vertex p1, Vertex p2, Vertex p3);//背面消隐
-void Draw(Matrix4x4 m, Matrix4x4 v, Matrix4x4 p);//绘制场景到backbuff
-void DrawTriangle(Vertex p1, Vertex p2, Vertex p3, Matrix4x4 m, Matrix4x4 v, Matrix4x4 p);//绘制三角形
-void TriangleRasterization(Vertex p1, Vertex p2, Vertex p3);//光栅化三角形
-void DrawTriangleTop(Vertex p1, Vertex p2, Vertex p3);//绘制平顶三角形
-void DrawTriangleBottom(Vertex p1, Vertex p2, Vertex p3);//绘制平底三角形
-void ScanlineFill(Vertex left, Vertex right, int yIndex);//扫描线填充算法
-Gdiplus::Color TransFormToGdiColor(Color color);//将我们自定义的color转换成GDI绘制使用的color
-void BresenhamDrawLine(Vertex p1, Vertex p2);//使用breasenham算法画线
-void Lighting(Matrix4x4 m, Vector3D worldEyePositon, Vertex &v);//顶点光照处理
-Color ReadTexture(int uIndex, int vIndex, Gdiplus::Color *color);//读取纹理颜色
-void ClearBackBuffer(byte r, byte g, byte b);//清理backbuff
-void SetBackBuff(int uIndex, int vIndex, Gdiplus::Color color);//设置backbuff颜色
+void SetMVTransform(Matrix4x4 m, Matrix4x4 v, Vertex &vertex);//transform the vertex from model space to view space
+void SetProjectionTransform(Matrix4x4 p, Vertex &vertex);//Project vertices into clipping space
+bool Clip(Vertex v);
+void TransformToScreen(Vertex &v);//transform the vertex to Screen space
+bool BackFaceCulling(Vertex p1, Vertex p2, Vertex p3);
+void Draw(Matrix4x4 m, Matrix4x4 v, Matrix4x4 p);//Draw the scene to the backbuff
+void DrawTriangle(Vertex p1, Vertex p2, Vertex p3, Matrix4x4 m, Matrix4x4 v, Matrix4x4 p);
+void TriangleRasterization(Vertex p1, Vertex p2, Vertex p3);//Rasterize triangles
+void DrawTriangleTop(Vertex p1, Vertex p2, Vertex p3);//Draw a flat-topped triangle
+void DrawTriangleBottom(Vertex p1, Vertex p2, Vertex p3);//Draw a flat-bottomed triangle
+void ScanlineFill(Vertex left, Vertex right, int yIndex);//Fills triangles by using scan line filling algorithm
+Gdiplus::Color TransFormToGdiColor(Color color);//Convert our custom color to the color used for GDI painting
+void BresenhamDrawLine(Vertex p1, Vertex p2);///Draw a line by using breasenham algorithm
+void Lighting(Matrix4x4 m, Vector3D worldEyePositon, Vertex &v);//vertex lighting process
+Color ReadTexture(int uIndex, int vIndex, Gdiplus::Color *color);
+void ClearBackBuffer(byte r, byte g, byte b);
+void SetBackBuff(int uIndex, int vIndex, Gdiplus::Color color);
 
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
@@ -104,17 +104,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		else
 		{
 
-			//清理zbuff和backbuff
+			//clear zbuff and backbuff
 			ZeroMemory(&zBuff, sizeof(zBuff));
 			ClearBackBuffer(100, 100, 100);
 
-			//生成m，v，p矩阵
+			//generate m，v，p matrix
 			rot += rotationSpeed;
 			Matrix4x4 m = MathTools::GetRotateX(rot) * MathTools::GetRotateY(rot) * MathTools::GetTranslate(0, 0, 10);
 			Matrix4x4 v = MathTools::GetView(camera.pos, camera.lookAt, camera.up);
 			Matrix4x4 p = MathTools::GetProjection(camera.fov, camera.aspect, camera.zn, camera.zf);
 			//
-			Draw(m, v, p);//使用m，v，p矩阵，将cube绘制到backbuff
+			Draw(m, v, p);
 			//
 			SetDIBits(screen_hdc, hCompatibleBitmap, 0, SCREEN_HEIGHT, backBuffer, (BITMAPINFO*)&binfo, DIB_RGB_COLORS);
 			BitBlt(screen_hdc, -1, -1, SCREEN_WIDTH, SCREEN_HEIGHT, hCompatibleDC, 0, 0, SRCCOPY);
@@ -124,7 +124,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	return 0;
 }
 
-//清除背后缓存为某一种颜色
 void ClearBackBuffer(byte r, byte g, byte b)
 {
 	for (int i = 0; i < SCREEN_HEIGHT*SCREEN_WIDTH; ++i)
@@ -147,7 +146,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 	case WM_KEYDOWN:
 		if (unsigned int(wParam) == 'Q')
-		{
+		{//press Q to switch RenderMode
 			if (currentMode == RenderMode::Textured)
 			{
 				currentMode = RenderMode::VertexColor;
@@ -163,7 +162,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		}
 
 		if (unsigned int(wParam) == 'W')
-		{
+		{//press W to switch LightMode
 			if (lightMode == LightMode::On)
 			{
 				lightMode = LightMode::Off;
@@ -175,7 +174,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		}
 
 		if (unsigned int(wParam) == 'E')
-		{
+		{//press W to switch TextureFilterMode
 			if (textureFilterMode == TextureFilterMode::Bilinear)
 			{
 				textureFilterMode = TextureFilterMode::point;
@@ -186,14 +185,14 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			}
 		}
 
-
+		//press Up or Down to adjust rotation speed
 		if (wParam == VK_UP)
 		{
-			rotationSpeed += 0.005;
+			rotationSpeed += 0.005f;
 		}
 		else if (wParam == VK_DOWN)
 		{
-			rotationSpeed -= 0.005;
+			rotationSpeed -= 0.005f;
 			if (rotationSpeed < 0)
 			{
 				rotationSpeed = 0;
@@ -227,7 +226,7 @@ void Init(HWND hwnd)
 	AdjustWindowRect(&rect, GetWindowLong(hwnd, GWL_STYLE), 0);
 
 	ZeroMemory(&binfo, sizeof(BITMAPINFO));
-	binfo.bmiHeader.biBitCount = 24;      //设置像素为24位
+	binfo.bmiHeader.biBitCount = 24;      // 24bits per pixel 
 	binfo.bmiHeader.biCompression = BI_RGB;
 	binfo.bmiHeader.biHeight = -SCREEN_HEIGHT;
 	binfo.bmiHeader.biPlanes = 1;
@@ -235,25 +234,24 @@ void Init(HWND hwnd)
 	binfo.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
 	binfo.bmiHeader.biWidth = SCREEN_WIDTH;
 
-	//获取屏幕HDC
 	screen_hdc = GetDC(hwnd);
 
 	hCompatibleDC = CreateCompatibleDC(screen_hdc);
 	hCompatibleBitmap = CreateCompatibleBitmap(screen_hdc, SCREEN_WIDTH, SCREEN_HEIGHT);
 	hOldBitmap = (HBITMAP)SelectObject(hCompatibleDC, hCompatibleBitmap);
 
-	//从Texture文件夹加载纹理数据
+	//Loads the Texture data from the Texture folder
 	LoadTexture(wstring(L"Texture/MyTexture.jpg"));
 	backBuffer = new byte[SCREEN_WIDTH*SCREEN_HEIGHT* 24 / 8];
 
 	currentMode = RenderMode::Textured;
 	lightMode = LightMode::On;
 	textureFilterMode = TextureFilterMode::Bilinear;
-	//定义环境光
+	//
 	ambient = Color(255, 255, 255);
-	//定义光照
+	//
 	light = Light(Vector3D(0, 0, 0), Color(255, 255, 255));
-	//定义相机
+	//
 	camera = Camera(Vector3D(0, 0, 0, 1), Vector3D(0, 0, 1, 1), Vector3D(0, 1, 0, 0), (float)PI / 4, SCREEN_WIDTH / SCREEN_HEIGHT, 1, 500);
 
 	
@@ -267,14 +265,13 @@ void LoadTexture(wstring TexureFilename)
 
 	Gdiplus::GdiplusStartup(&gdiplustoken, &gdiplusstartupinput, NULL);
 
-	//读取纹理
+	//loading texture
 	texture = new Gdiplus::Bitmap(TexureFilename.c_str());
-	//texture->GetPixel(1,1,&color);
 	textureWidth = texture->GetWidth();
 	textureHeight = texture->GetHeight();
 	
 
-	//创建纹理缓存,screen_h*screen_w * 3个字节大
+	//Create a texture buff
 	textureBuffer = new BYTE[textureWidth*textureHeight * 3];
 
 	for (int i = 0; i < textureHeight; ++i)
@@ -282,7 +279,7 @@ void LoadTexture(wstring TexureFilename)
 		for (int j = 0; j <textureWidth; ++j)
 		{
 			texture->GetPixel(j, i, &color);
-			//将像素的颜色写入纹理缓存,注意颜色的顺序应该是rgb
+			//Writes the pixel colors to the texture buff, noting that the order of colors is RGB
 			textureBuffer[i * textureWidth * 3 + (j + 1) * 3 - 1] = color.GetR();
 			textureBuffer[i * textureWidth * 3 + (j + 1) * 3 - 2] = color.GetG();
 			textureBuffer[i * textureWidth * 3 + (j + 1) * 3 - 3] = color.GetB();
@@ -304,13 +301,12 @@ void SetMVTransform(Matrix4x4 m, Matrix4x4 v, Vertex &vertex)
 void SetProjectionTransform(Matrix4x4 p, Vertex &vertex)
 {
 	vertex.point = vertex.point * p;
-	//得到齐次裁剪空间的点 v.point.w 中保存着原来的z(具体是z还是-z要看使用的投影矩阵,我们使用投影矩阵是让w中保存着z)
+	//we have transformed the vertex into clipping space, the original z information of the vertex are saved in vertex.point.w(it depends on the projection matrix we used, autually we use the projection matrix to save z in w)
 
-
-	//onePerZ 保存1/z，方便之后对1/z关于x’、y’插值得到1/z’ 
+	//OnePerZ saves 1/z for convenience of calculation of Interpolation
 	vertex.onePerZ = 1 / vertex.point.w;
-	//校正的推论： s/z、t/z和x’、y’也是线性关系。而我们之前知道1/z和x’、y’是线性关系。则我们得出新的思路：对1/z关于x’、y’插值得到1/z’，然后对s/z、t/z关于x’、y’进行插值得到s’/z’、t’/z’，然后用s’/z’和t’/z’分别除以1/z’，就得到了插值s’和t’
-	//这里将需要插值的信息都乘以1/z 得到 s/z和t/z等，方便光栅化阶段进行插值
+
+	//Multiply u,v,vcolor, and lightingcolor by 1/w for perspective correction later
 	vertex.u *= vertex.onePerZ;
 	vertex.v *= vertex.onePerZ;
 	//
@@ -320,8 +316,7 @@ void SetProjectionTransform(Matrix4x4 p, Vertex &vertex)
 }
 
 bool Clip(Vertex v)
-{
-	//cvv为 x-1,1  y-1,1  z0,1
+{//whether to clip this vertex
 	if (v.point.x >= -v.point.w && v.point.x <= v.point.w &&
 		v.point.y >= -v.point.w && v.point.y <= v.point.w &&
 		v.point.z >= 0 && v.point.z <= v.point.w)
@@ -334,12 +329,12 @@ void TransformToScreen(Vertex &v)
 {
 	if (v.point.w != 0)
 	{
-		//先进行透视除法，转到cvv
+		//do perspective division， transform point into CVV
 		v.point.x *= 1 / v.point.w;
 		v.point.y *= 1 / v.point.w;
 		v.point.z *= 1 / v.point.w;
 		v.point.w = 1;
-		//cvv到屏幕坐标
+		//cvv to screen
 		v.point.x = (v.point.x + 1) * 0.5f * SCREEN_WIDTH;
 		v.point.y = (1 - v.point.y) * 0.5f * SCREEN_HEIGHT;
 	}
@@ -347,7 +342,7 @@ void TransformToScreen(Vertex &v)
 bool BackFaceCulling(Vertex p1, Vertex p2, Vertex p3)
 {
 	if (currentMode == RenderMode::Wireframe)
-	{//线框模式不进行背面消隐
+	{
 		return true;
 	}
 	else
@@ -355,7 +350,7 @@ bool BackFaceCulling(Vertex p1, Vertex p2, Vertex p3)
 		Vector3D v1 = p2.point - p1.point;
 		Vector3D v2 = p3.point - p2.point;
 		Vector3D normal = Vector3D::Cross(v1, v2);
-		//由于在视空间中，所以相机点就是（0,0,0）
+		//Because it's in view space, the camera position is (0,0,0).
 		Vector3D viewDir = p1.point -  Vector3D(0, 0, 0);
 		if (Vector3D::Dot(normal, viewDir) > 0)
 		{
@@ -366,52 +361,51 @@ bool BackFaceCulling(Vertex p1, Vertex p2, Vertex p3)
 }
 void Draw(Matrix4x4 m, Matrix4x4 v, Matrix4x4 p)
 {
-	for (int i = 0; i + 2 < mesh.verts.size(); i += 3)
+	for (unsigned i = 0; i + 2 < mesh.verts.size(); i += 3)
 	{
 		DrawTriangle(mesh.verts[i], mesh.verts[i + 1], mesh.verts[i + 2], m, v, p);
 	}
 }
 void DrawTriangle(Vertex p1, Vertex p2, Vertex p3, Matrix4x4 m, Matrix4x4 v, Matrix4x4 p)
 {
-	//--------------------几何阶段---------------------------
+	//--------------------The geometric phase---------------------------//
+
 	if (lightMode == LightMode::On)
-	{//进行顶点光照
+	{//Vertex lighting
 		Lighting(m, camera.pos,  p1);
 		Lighting(m, camera.pos,  p2);
 		Lighting(m, camera.pos,  p3);
 	}
 
-	//变换到相机空间
+	//transform to view space
 	SetMVTransform(m, v,  p1);
 	SetMVTransform(m, v,  p2);
 	SetMVTransform(m, v,  p3);
 
-	//在相机空间进行背面消隐
+	//back culling in view space
 	if (BackFaceCulling(p1, p2, p3) == false)
 	{
 		return;
 	}
 
-	//变换到齐次剪裁空间
+	//Transform to the homogeneous clipping space
 	SetProjectionTransform(p,  p1);
 	SetProjectionTransform(p,  p2);
 	SetProjectionTransform(p,  p3);
 
-	//裁剪
 	if (Clip(p1) == false || Clip(p2) == false || Clip(p3) == false)
 	{
 		return;
 	}
-
-	//变换到屏幕坐标
+	//Transform to screen coordinates
 	TransformToScreen( p1);
 	TransformToScreen( p2);
 	TransformToScreen( p3);
 
-	//--------------------光栅化阶段---------------------------
+	//--------------------Raster phase---------------------------//
 
 	if (currentMode == RenderMode::Wireframe)
-	{//线框模式
+	{
 		BresenhamDrawLine(p1, p2);
 		BresenhamDrawLine(p2, p3);
 		BresenhamDrawLine(p3, p1);
@@ -426,38 +420,38 @@ void TriangleRasterization(Vertex p1, Vertex p2, Vertex p3)
 	if (p1.point.y == p2.point.y)
 	{
 		if (p1.point.y < p3.point.y)
-		{//平顶
+		{
 			DrawTriangleTop(p1, p2, p3);
 		}
 		else
-		{//平底
+		{
 			DrawTriangleBottom(p3, p1, p2);
 		}
 	}
 	else if (p1.point.y == p3.point.y)
 	{
 		if (p1.point.y < p2.point.y)
-		{//平顶
+		{
 			DrawTriangleTop(p1, p3, p2);
 		}
 		else
-		{//平底
+		{
 			DrawTriangleBottom(p2, p1, p3);
 		}
 	}
 	else if (p2.point.y == p3.point.y)
 	{
 		if (p2.point.y < p1.point.y)
-		{//平顶
+		{
 			DrawTriangleTop(p2, p3, p1);
 		}
 		else
-		{//平底
+		{
 			DrawTriangleBottom(p1, p2, p3);
 		}
 	}
 	else
-	{//分割三角形
+	{//split triangles
 		Vertex top;
 
 		Vertex bottom;
@@ -500,22 +494,20 @@ void TriangleRasterization(Vertex p1, Vertex p2, Vertex p3)
 		}
 		else
 		{
-			//三点共线
+			//three points are in the same line
 			return;
 		}
-		//插值求中间点x
+		///figure out  middle point x
 		float middlex = (middle.point.y - top.point.y) * (bottom.point.x - top.point.x) / (bottom.point.y - top.point.y) + top.point.x;
 		float dy = middle.point.y - top.point.y;
 		float t = dy / (bottom.point.y - top.point.y);
-		//插值生成左右顶点
+		//figure out left and right point
 		Vertex newMiddle;
 		newMiddle.point.x = middlex;
 		newMiddle.point.y = middle.point.y;
 		MathTools::ScreenSpaceLerpVertex(newMiddle, top, bottom, t);
 
-		//平底
 		DrawTriangleBottom(top, newMiddle, middle);
-		//平顶
 		DrawTriangleTop(newMiddle, middle, bottom);
 	}
 }
@@ -531,7 +523,7 @@ void DrawTriangleTop(Vertex p1, Vertex p2, Vertex p3)
 
 			float dy = y - p1.point.y;
 			float t = dy / (p3.point.y - p1.point.y);
-			//插值生成左右顶点
+			//figure out left point and right point
 			Vertex new1;
 			new1.point.x = xl;
 			new1.point.y = y;
@@ -541,7 +533,7 @@ void DrawTriangleTop(Vertex p1, Vertex p2, Vertex p3)
 			new2.point.x = xr;
 			new2.point.y = y;
 			MathTools::ScreenSpaceLerpVertex(new2, p2, p3, t);
-			//扫描线填充
+			//fills  triangle
 			if (new1.point.x < new2.point.x)
 			{
 				ScanlineFill(new1, new2, yIndex);
@@ -565,7 +557,7 @@ void DrawTriangleBottom(Vertex p1, Vertex p2, Vertex p3)
 
 			float dy = y - p1.point.y;
 			float t = dy / (p2.point.y - p1.point.y);
-			//插值生成左右顶点
+
 			Vertex new1;
 			new1.point.x = xl;
 			new1.point.y = y;
@@ -575,7 +567,7 @@ void DrawTriangleBottom(Vertex p1, Vertex p2, Vertex p3)
 			new2.point.x = xr;
 			new2.point.y = y;
 			MathTools::ScreenSpaceLerpVertex(new2, p1, p3, t);
-			//扫描线填充
+
 			if (new1.point.x < new2.point.x)
 			{
 				ScanlineFill(new1, new2, yIndex);
@@ -600,19 +592,19 @@ void ScanlineFill(Vertex left, Vertex right, int yIndex)
 			{
 				lerpFactor = (x - left.point.x) / dx;
 			}
-			//1/z’与x’和y'是线性关系的
-			float onePreZ = MathTools::Lerp(left.onePerZ, right.onePerZ, lerpFactor);
-			if (onePreZ >= zBuff[yIndex][xIndex])//使用1/z进行深度测试
-			{//通过测试
+			
+			float onePreZ = MathTools::Lerp(left.onePerZ, right.onePerZ, lerpFactor);//interpolates 1/z linearly for perspective correction later
+			if (onePreZ >= zBuff[yIndex][xIndex])//Using 1/z for depth testing
+			{
 				
 				zBuff[yIndex][xIndex] = onePreZ;
 
 				float w = 1 / onePreZ;
 
-				//uv 插值，求纹理颜色
+				// uv perspective correction 
 				float u = MathTools::Lerp(left.u, right.u, lerpFactor) * w * (textureWidth - 1);
 				float v = MathTools::Lerp(left.v, right.v, lerpFactor) * w * (textureHeight - 1);
-				//纹理采样
+				
 				Color texColor;
 				Gdiplus::Color textureColor;
 				Color finalColor;
@@ -620,18 +612,18 @@ void ScanlineFill(Vertex left, Vertex right, int yIndex)
 				if (RenderMode::Textured == currentMode)
 				{
 					if (textureFilterMode == TextureFilterMode::point)
-					{//点采样
+					{//Point sampling
 
-						int uIndex = (int)round(u + 0.5);
-						int vIndex = (int)round(v + 0.5);
+						int uIndex = (int)round(u);
+						int vIndex = (int)round(v);
 						uIndex = MathTools::Range(uIndex, 0, textureWidth - 1);
 						vIndex = MathTools::Range(vIndex, 0, textureHeight - 1);
-						//uv坐标系采用dx风格
-						texColor = ReadTexture(uIndex, vIndex, &textureColor);//转到我们自定义的color进行计算
+						//The uv coordinate system we used is Direct3D style
+						texColor = ReadTexture(uIndex, vIndex, &textureColor);
 
 					}
 					else if (textureFilterMode == TextureFilterMode::Bilinear)
-					{//双线性采样
+					{//Bilinear sampling
 						float uIndex = (float)floor(u);
 						float vIndex = (float)floor(v);
 						float du = u - uIndex;
@@ -645,7 +637,6 @@ void ScanlineFill(Vertex left, Vertex right, int yIndex)
 					}
 					if (lightMode == LightMode::On)
 					{
-						//插值光照颜色
 						Color lightColor = MathTools::Lerp(left.lightingColor, right.lightingColor, lerpFactor) * w;
 						finalColor = texColor * lightColor;
 					}
@@ -656,11 +647,9 @@ void ScanlineFill(Vertex left, Vertex right, int yIndex)
 				}
 				else if (RenderMode::VertexColor == currentMode)
 				{
-					//插值顶点颜色
 					Color vertColor = MathTools::Lerp(left.vcolor, right.vcolor, lerpFactor) * w;
 					if (lightMode == LightMode::On)
 					{
-						//插值光照颜色
 						Color lightColor = MathTools::Lerp(left.lightingColor, right.lightingColor, lerpFactor) * w;
 						finalColor = vertColor * lightColor;
 					}
@@ -668,7 +657,6 @@ void ScanlineFill(Vertex left, Vertex right, int yIndex)
 					{
 						finalColor = vertColor;
 					}
-					
 				}
 				
 				SetBackBuff(xIndex, yIndex, TransFormToGdiColor(finalColor));
@@ -746,13 +734,13 @@ void BresenhamDrawLine(Vertex p1, Vertex p2)
 }
 void Lighting(Matrix4x4 m, Vector3D worldEyePositon, Vertex &v)
 {
-	Vector3D worldPoint = v.point * m;//世界空间顶点位置
+	Vector3D worldPoint = v.point * m;//position in World space 
 	Matrix4x4 it = m.Inverse();
 	it.Transpose();
-	Vector3D normal = v.normal * it;//模型空间法线乘以世界矩阵的逆转置得到世界空间法线
+	Vector3D normal = v.normal * it;//The model space normals are multiplied by the transposition of inverse of the world matrix to get the world space normals
 	normal.Normalize();
-	Color emissiveColor = mesh.material.emissive;//自发光
-	Color ambientColor = ambient * mesh.material.ka;//环境光 
+	Color emissiveColor = mesh.material.emissive;
+	Color ambientColor = ambient * mesh.material.ka;
 
 	Vector3D inLightDir = light.worldPosition - worldPoint;
 	inLightDir.Normalize();
@@ -763,7 +751,7 @@ void Lighting(Matrix4x4 m, Vector3D worldEyePositon, Vertex &v)
 	}
 	else
 	{
-		Color diffuseColor = mesh.material.diffuse * diffuse * light.lightColor;//漫反射
+		Color diffuseColor = mesh.material.diffuse * diffuse * light.lightColor;
 		//
 		Vector3D inViewDir = worldEyePositon - worldPoint;
 		inViewDir.Normalize();
@@ -771,10 +759,10 @@ void Lighting(Matrix4x4 m, Vector3D worldEyePositon, Vertex &v)
 		h.Normalize();
 		float specular = 0;
 		if (diffuse != 0)
-		{//防止出现光源在物体背面产生高光的情况
+		{
 			specular = pow(MathTools::Range(Vector3D::Dot(h, normal), (float)0, (float)1), mesh.material.shininess);
 		}
-		Color specularColor = mesh.material.specular * specular * light.lightColor;//镜面高光
+		Color specularColor = mesh.material.specular * specular * light.lightColor;
 		v.lightingColor = emissiveColor + ambientColor + diffuseColor + specularColor;
 	}
 		
@@ -798,9 +786,9 @@ Color ReadTexture(int uIndex, int vIndex, Gdiplus::Color *color)
 
 Gdiplus::Color TransFormToGdiColor(Color color)
 {
-	float r = color.GetR();
-	float g = color.GetG();
-	float b = color.GetB();
+	byte r = color.GetR();
+	byte g = color.GetG();
+	byte b = color.GetB();
 	return Gdiplus::Color(r, g, b);
 };
 

@@ -3,14 +3,14 @@
 #include"Color.h"
 struct Vertex
 {
-	Vector3D point;//顶点位置
-	float u;//纹理坐标
-	float v;//纹理坐标
-	Color vcolor; //顶点色
-	Vector3D normal;//法线
-	Color lightingColor;//光照颜色
+	Vector3D point;//Vertex coordinates
+	float u;//Texture coordinates
+	float v;//Texture coordinates
+	Color vcolor; //Vertex color
+	Vector3D normal;//vertex normal
+	Color lightingColor;//Used to save the color of the vertex after lighting
 	//
-	float onePerZ;//1/z，用于顶点信息的透视校正
+	float onePerZ;//1/z，used for perspective correction
 
 	Vertex()
 	{
@@ -22,13 +22,10 @@ struct Vertex
 		lightingColor = Color(0, 0, 0);
 	}
 
-	Vertex(Vector3D p, Vector3D n, float u, float v, byte r, byte g, byte b) :point(p), normal(n), u(u), v(v)
+	Vertex(Vector3D p, Vector3D n, float u, float v, Color color) :point(p), normal(n), u(u), v(v), vcolor(color)
 	{
 
 		point.w = 1;
-		vcolor.SetR(r);
-		vcolor.SetG(g);
-		vcolor.SetB(b);
 		onePerZ = 1;
 
 		lightingColor.SetR(0);

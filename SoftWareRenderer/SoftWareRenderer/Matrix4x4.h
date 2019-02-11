@@ -1,6 +1,5 @@
 #pragma once
 #include<Windows.h>
-//定义4x4矩阵
 struct Matrix4x4
 {
 public:
@@ -11,16 +10,16 @@ public:
 		float d1, float d2, float d3, float d4);
 	friend Matrix4x4 operator*(Matrix4x4 lhs, Matrix4x4 rhs);
 
-	void Identity();//单位化矩阵
-	void SetZero();//设置为零矩阵
-	void Transpose();//转置
-	float Determinate();//求行列式
-	Matrix4x4 GetAdjoint();//获得伴随矩阵
-	Matrix4x4 Inverse();//获得逆矩阵
+	void Identity();//Get identity matrix
+	void SetZero();//Set to zero matrix
+	void Transpose();//Transpose the matrix
+	float Determinant();//calculate determinant of the matrix
+	Matrix4x4 GetAdjoint();//calculate the adjoint matrix
+	Matrix4x4 Inverse();//calculate the inverse matrix
 	//
 	float m[4][4];
 private:
-	float Determinate(float mat[4][4], int n);//递归算法求矩阵行列式
+	float Determinant(float mat[4][4], int n);//using recursive algorithm to find the matrix determinant
 
 
 };

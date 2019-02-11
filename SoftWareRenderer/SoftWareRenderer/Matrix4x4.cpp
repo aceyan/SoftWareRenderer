@@ -66,37 +66,37 @@ void Matrix4x4::Transpose()
 		}
 	}
 }
-float Matrix4x4::Determinate()
+float Matrix4x4::Determinant()
 {
-	return Determinate(m, 4);
+	return Determinant(m, 4);
 }
 
-float Matrix4x4::Determinate(float mat[4][4], int n)
+float Matrix4x4::Determinant(float mat[4][4], int n)
 {
 	if (n == 1)
-	{//递归出口
+	{
 		return mat[0][0];
 	}
 	else
 	{
 		float result = 0;
 	
-		float tempM[4][4];
+		float tempM[4][4];//Using fixed size of storage space to improve performance and avoiding dynamic allocation of storage space
 
 		for (int i = 0; i < n; i++)
 		{
-			//求代数余子式
-			for (int j = 0; j < n - 1; j++)//行
+			//calculates the cofactors
+			for (int j = 0; j < n - 1; j++)
 			{
 				for (int k = 0; k < n - 1; k++)//列
 				{
-					int x = j + 1;//原矩阵行
-					int y = k >= i ? k + 1 : k;//原矩阵列
+					int x = j + 1;
+					int y = k >= i ? k + 1 : k;
 					tempM[j][k] = mat[x][y];
 				}
 			}
 
-			result += (float)pow((float)-1, 1 + (1 + i)) * mat[0][i] * Determinate(tempM, n - 1);
+			result += (float)pow((float)-1, 1 + (1 + i)) * mat[0][i] * Determinant(tempM, n - 1);
 		}
 
 		return result;
@@ -122,22 +122,22 @@ Matrix4x4 Matrix4x4::GetAdjoint()
 					tempM[k][t] = m[x][ y];
 				}
 			}
-			result.m[i][j] = (float)pow((float)-1, (1 + j) + (1 + i)) * Determinate(tempM, 3);
+			result.m[i][j] = (float)pow((float)-1, (1 + j) + (1 + i)) * Determinant(tempM, 3);
 		}
 	}
-	result.Transpose();//转置
+	result.Transpose();
 	return result;
 }
 Matrix4x4 Matrix4x4::Inverse()
 {
 	Matrix4x4 adj;
-	float a = Determinate();
+	float a = Determinant();
 	if (a == 0)
 	{
-		//矩阵不可逆
+		//the Matrix is irreversible
 		return adj;
 	}
-	adj = GetAdjoint();//伴随矩阵
+	adj = GetAdjoint();//get Adjoint matrix
 	for (int i = 0; i < 4; i++)
 	{
 		for (int j = 0; j < 4; j++)

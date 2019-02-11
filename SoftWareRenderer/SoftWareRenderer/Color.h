@@ -1,14 +1,15 @@
 #pragma once
+//color r:0-255 g:0-255 b:0-255
 struct  Color
 {
 public:
 	Color(){ _r = _b = _g = 0; };
 	Color(byte r, byte g, byte b) :_r(r), _g(g), _b(b){};
 	friend Color operator * (Color a, Color b)
-	{//ÑÕÉ«µ÷ºÍ
-		byte R = (a.GetR() / 255) * (b.GetR() / 255) * 255;
-		byte G = (a.GetG() / 255) * (b.GetG() / 255) * 255;
-		byte B = (a.GetB() / 255) * (b.GetB() / 255) * 255;
+	{//modulate color
+		byte R = byte((a.GetR() / 255.0f) * (b.GetR() / 255.0f) * 255);
+		byte G = byte((a.GetG() / 255.0f) * (b.GetG() / 255.0f) * 255);
+		byte B = byte((a.GetB() / 255.0f) * (b.GetB() / 255.0f) * 255);
 		return Color(R, G, B);
 	};
 	friend Color operator * (float a, Color b)
@@ -33,9 +34,9 @@ public:
 		return Color(Color::LimitRange(R), Color::LimitRange(G), Color::LimitRange(B));
 	};
 
-	float GetR(){ return _r; };
-	float GetB(){ return _b; };
-	float GetG(){ return _g; };
+	byte GetR(){ return _r; };
+	byte GetB(){ return _b; };
+	byte GetG(){ return _g; };
 
 	void SetR(byte r){ _r = Color::LimitRange(r); };
 	void SetB(byte b){ _b = Color::LimitRange(b); };
@@ -64,7 +65,7 @@ public:
 		{
 			return 255;
 		}
-		return v;
+		return (byte)v;
 	}
 
 private:
