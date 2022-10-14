@@ -11,7 +11,7 @@
 
 #include<gdiplus.h>
 #pragma comment(lib, "gdiplus.lib")  
-
+ 
 //use screen space interpolation for caculating depht used for depth test
 #define WITH_SCREENSPACE_LINEAR_INTERPOLATION 1
 #define WITH_BACKFACECULLING 0

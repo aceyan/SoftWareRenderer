@@ -2,7 +2,7 @@
 G:\Aceyan\SoftWareRenderer\SoftWareRenderer\SoftWareRenderer\MathTools.h(24,2): warning C4091: “static ”: 没有声明变量时忽略“MathTools”的左侧
 G:\Aceyan\SoftWareRenderer\SoftWareRenderer\SoftWareRenderer\Main.cpp(784,18): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
   正在生成代码
-  3 of 217 functions ( 1.4%) were compiled, the rest were copied from previous compilation.
+  4 of 217 functions ( 1.8%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
     1 functions had inline decision re-evaluated but remain unchanged
   已完成代码的生成
