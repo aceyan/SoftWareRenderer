@@ -128,6 +128,8 @@ void MathTools::ScreenSpaceLerpVertex(Vertex &v, Vertex v1, Vertex v2, float t)
 	v.vcolor = MathTools::Lerp(v1.vcolor, v2.vcolor, t);
 	//
 	v.lightingColor = MathTools::Lerp(v1.lightingColor, v2.lightingColor, t);
+	//
+	v.point.z = MathTools::Lerp(v1.point.z, v2.point.z, t);
 }
 
 int MathTools::Range(int v, int min, int max)

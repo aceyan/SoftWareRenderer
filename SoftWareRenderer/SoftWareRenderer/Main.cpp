@@ -7,9 +7,14 @@
 #include"Light.h"
 #include"Camera.h"
 #include"Enum.h"
+#include <string>
 
 #include<gdiplus.h>
 #pragma comment(lib, "gdiplus.lib")  
+
+//use screen space interpolation for caculating depht used for depth test
+#define WITH_SCREENSPACE_LINEAR_INTERPOLATION 1
+#define WITH_BACKFACECULLING 0
 
 #define WINDOW_TITLE   L"MyRaster"
 #define SCREEN_WIDTH 600
@@ -17,9 +22,9 @@
 #define PI 3.1415926
 // required system components
 static HDC screen_hdc;
-static HDC hCompatibleDC; 
+static HDC hCompatibleDC;
 static HBITMAP hCompatibleBitmap;
-static HBITMAP hOldBitmap;	  
+static HBITMAP hOldBitmap;
 static BITMAPINFO binfo;
 
 Gdiplus::Bitmap* texture;
@@ -37,18 +42,18 @@ float rotationSpeed = 0.03f;//cube rotation speed
 RenderMode currentMode;
 LightMode lightMode;
 TextureFilterMode textureFilterMode;
-BYTE *textureBuffer;//Saving the texture RGB data
-BYTE *backBuffer;  //saving color information of backbuff, every three bytes is a pixel
+BYTE* textureBuffer;//Saving the texture RGB data
+BYTE* backBuffer;  //saving color information of backbuff, every three bytes is a pixel
 
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 void Init(HWND hwnd);//Initialize components
 void LoadTexture(wstring TexureFilename);//Load texture from a file
 
-void SetMVTransform(Matrix4x4 m, Matrix4x4 v, Vertex &vertex);//transform the vertex from model space to view space
-void SetProjectionTransform(Matrix4x4 p, Vertex &vertex);//Project vertices into clipping space
+void SetMVTransform(Matrix4x4 m, Matrix4x4 v, Vertex& vertex);//transform the vertex from model space to view space
+void SetProjectionTransform(Matrix4x4 p, Vertex& vertex);//Project vertices into clipping space
 bool Clip(Vertex v);
-void TransformToScreen(Vertex &v);//transform the vertex to Screen space
+void TransformToScreen(Vertex& v);//transform the vertex to Screen space
 bool BackFaceCulling(Vertex p1, Vertex p2, Vertex p3);
 void Draw(Matrix4x4 m, Matrix4x4 v, Matrix4x4 p);//Draw the scene to the backbuff
 void DrawTriangle(Vertex p1, Vertex p2, Vertex p3, Matrix4x4 m, Matrix4x4 v, Matrix4x4 p);
@@ -58,8 +63,8 @@ void DrawTriangleBottom(Vertex p1, Vertex p2, Vertex p3);//Draw a flat-bottomed 
 void ScanlineFill(Vertex left, Vertex right, int yIndex);//Fills triangles by using scan line filling algorithm
 Gdiplus::Color TransFormToGdiColor(Color color);//Convert our custom color to the color used for GDI painting
 void BresenhamDrawLine(Vertex p1, Vertex p2);///Draw a line by using breasenham algorithm
-void Lighting(Matrix4x4 m, Vector3D worldEyePositon, Vertex &v);//vertex lighting process
-Color ReadTexture(int uIndex, int vIndex, Gdiplus::Color *color);
+void Lighting(Matrix4x4 m, Vector3D worldEyePositon, Vertex& v);//vertex lighting process
+Color ReadTexture(int uIndex, int vIndex, Gdiplus::Color* color);
 void ClearBackBuffer(byte r, byte g, byte b);
 void SetBackBuff(int uIndex, int vIndex, Gdiplus::Color color);
 
@@ -126,7 +131,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 void ClearBackBuffer(byte r, byte g, byte b)
 {
-	for (int i = 0; i < SCREEN_HEIGHT*SCREEN_WIDTH; ++i)
+	for (int i = 0; i < SCREEN_HEIGHT * SCREEN_WIDTH; ++i)
 	{
 
 		backBuffer[i * 3 + 0] = r;
@@ -202,10 +207,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		if (wParam == VK_ESCAPE)
 			DestroyWindow(hwnd);
 		break;
-	
+
 
 	case WM_KEYUP:
-		
+
 		break;
 
 	case WM_DESTROY:
@@ -242,7 +247,7 @@ void Init(HWND hwnd)
 
 	//Loads the Texture data from the Texture folder
 	LoadTexture(wstring(L"Texture/MyTexture.jpg"));
-	backBuffer = new byte[SCREEN_WIDTH*SCREEN_HEIGHT* 24 / 8];
+	backBuffer = new byte[SCREEN_WIDTH * SCREEN_HEIGHT * 24 / 8];
 
 	currentMode = RenderMode::Textured;
 	lightMode = LightMode::On;
@@ -254,7 +259,7 @@ void Init(HWND hwnd)
 	//
 	camera = Camera(Vector3D(0, 0, 0, 1), Vector3D(0, 0, 1, 1), Vector3D(0, 1, 0, 0), (float)PI / 4, SCREEN_WIDTH / SCREEN_HEIGHT, 1, 500);
 
-	
+
 }
 
 void LoadTexture(wstring TexureFilename)
@@ -269,14 +274,14 @@ void LoadTexture(wstring TexureFilename)
 	texture = new Gdiplus::Bitmap(TexureFilename.c_str());
 	textureWidth = texture->GetWidth();
 	textureHeight = texture->GetHeight();
-	
+
 
 	//Create a texture buff
-	textureBuffer = new BYTE[textureWidth*textureHeight * 3];
+	textureBuffer = new BYTE[textureWidth * textureHeight * 3];
 
 	for (int i = 0; i < textureHeight; ++i)
 	{
-		for (int j = 0; j <textureWidth; ++j)
+		for (int j = 0; j < textureWidth; ++j)
 		{
 			texture->GetPixel(j, i, &color);
 			//Writes the pixel colors to the texture buff, noting that the order of colors is RGB
@@ -292,13 +297,13 @@ void LoadTexture(wstring TexureFilename)
 
 
 
-void SetMVTransform(Matrix4x4 m, Matrix4x4 v, Vertex &vertex)
+void SetMVTransform(Matrix4x4 m, Matrix4x4 v, Vertex& vertex)
 {
 	vertex.point = vertex.point * m * v;
 }
 
 
-void SetProjectionTransform(Matrix4x4 p, Vertex &vertex)
+void SetProjectionTransform(Matrix4x4 p, Vertex& vertex)
 {
 	vertex.point = vertex.point * p;
 	//we have transformed the vertex into clipping space, the original z information of the vertex are saved in vertex.point.w(it depends on the projection matrix we used, autually we use the projection matrix to save z in w)
@@ -325,7 +330,7 @@ bool Clip(Vertex v)
 	}
 	return false;
 }
-void TransformToScreen(Vertex &v)
+void TransformToScreen(Vertex& v)
 {
 	if (v.point.w != 0)
 	{
@@ -351,7 +356,7 @@ bool BackFaceCulling(Vertex p1, Vertex p2, Vertex p3)
 		Vector3D v2 = p3.point - p2.point;
 		Vector3D normal = Vector3D::Cross(v1, v2);
 		//Because it's in view space, the camera position is (0,0,0).
-		Vector3D viewDir = p1.point -  Vector3D(0, 0, 0);
+		Vector3D viewDir = p1.point - Vector3D(0, 0, 0);
 		if (Vector3D::Dot(normal, viewDir) > 0)
 		{
 			return true;
@@ -372,35 +377,38 @@ void DrawTriangle(Vertex p1, Vertex p2, Vertex p3, Matrix4x4 m, Matrix4x4 v, Mat
 
 	if (lightMode == LightMode::On)
 	{//Vertex lighting
-		Lighting(m, camera.pos,  p1);
-		Lighting(m, camera.pos,  p2);
-		Lighting(m, camera.pos,  p3);
+		Lighting(m, camera.pos, p1);
+		Lighting(m, camera.pos, p2);
+		Lighting(m, camera.pos, p3);
 	}
 
 	//transform to view space
-	SetMVTransform(m, v,  p1);
-	SetMVTransform(m, v,  p2);
-	SetMVTransform(m, v,  p3);
+	SetMVTransform(m, v, p1);
+	SetMVTransform(m, v, p2);
+	SetMVTransform(m, v, p3);
 
+#if WITH_BACKFACECULLING
 	//back culling in view space
 	if (BackFaceCulling(p1, p2, p3) == false)
 	{
 		return;
 	}
+#endif
+	
 
 	//Transform to the homogeneous clipping space
-	SetProjectionTransform(p,  p1);
-	SetProjectionTransform(p,  p2);
-	SetProjectionTransform(p,  p3);
+	SetProjectionTransform(p, p1);
+	SetProjectionTransform(p, p2);
+	SetProjectionTransform(p, p3);
 
 	if (Clip(p1) == false || Clip(p2) == false || Clip(p3) == false)
 	{
 		return;
 	}
 	//Transform to screen coordinates
-	TransformToScreen( p1);
-	TransformToScreen( p2);
-	TransformToScreen( p3);
+	TransformToScreen(p1);
+	TransformToScreen(p2);
+	TransformToScreen(p3);
 
 	//--------------------Raster phase---------------------------//
 
@@ -505,6 +513,7 @@ void TriangleRasterization(Vertex p1, Vertex p2, Vertex p3)
 		Vertex newMiddle;
 		newMiddle.point.x = middlex;
 		newMiddle.point.y = middle.point.y;
+		newMiddle.point.z = middle.point.z;
 		MathTools::ScreenSpaceLerpVertex(newMiddle, top, bottom, t);
 
 		DrawTriangleBottom(top, newMiddle, middle);
@@ -583,7 +592,7 @@ void ScanlineFill(Vertex left, Vertex right, int yIndex)
 {
 	float dx = right.point.x - left.point.x;
 	for (float x = left.point.x; x <= right.point.x; x += 0.5)
-	{   
+	{
 		int xIndex = (int)(x);
 		if (xIndex >= 0 && xIndex < SCREEN_WIDTH)
 		{
@@ -592,19 +601,30 @@ void ScanlineFill(Vertex left, Vertex right, int yIndex)
 			{
 				lerpFactor = (x - left.point.x) / dx;
 			}
-			
+
 			float onePreZ = MathTools::Lerp(left.onePerZ, right.onePerZ, lerpFactor);//interpolates 1/z linearly for perspective correction later
+#if !WITH_SCREENSPACE_LINEAR_INTERPOLATION
+
 			if (onePreZ >= zBuff[yIndex][xIndex])//Using 1/z for depth testing
 			{
-				
+
 				zBuff[yIndex][xIndex] = onePreZ;
+
+#else
+			float ScreenSpaceZ = MathTools::Lerp(left.point.z, right.point.z, lerpFactor);
+			float ScreenSpaceOnePreZ = 1.0f / ScreenSpaceZ;
+			if (ScreenSpaceOnePreZ >= zBuff[yIndex][xIndex])//Using 1/z for depth testing
+			{
+				zBuff[yIndex][xIndex] = ScreenSpaceOnePreZ;
+
+#endif
 
 				float w = 1 / onePreZ;
 
 				// uv perspective correction 
 				float u = MathTools::Lerp(left.u, right.u, lerpFactor) * w * (textureWidth - 1);
 				float v = MathTools::Lerp(left.v, right.v, lerpFactor) * w * (textureHeight - 1);
-				
+
 				Color texColor;
 				Gdiplus::Color textureColor;
 				Color finalColor;
@@ -658,10 +678,11 @@ void ScanlineFill(Vertex left, Vertex right, int yIndex)
 						finalColor = vertColor;
 					}
 				}
-				
+
 				SetBackBuff(xIndex, yIndex, TransFormToGdiColor(finalColor));
-				
+
 			}
+
 		}
 	}
 }
@@ -732,7 +753,7 @@ void BresenhamDrawLine(Vertex p1, Vertex p2)
 		}
 	}
 }
-void Lighting(Matrix4x4 m, Vector3D worldEyePositon, Vertex &v)
+void Lighting(Matrix4x4 m, Vector3D worldEyePositon, Vertex & v)
 {
 	Vector3D worldPoint = v.point * m;//position in World space 
 	Matrix4x4 it = m.Inverse();
@@ -765,21 +786,21 @@ void Lighting(Matrix4x4 m, Vector3D worldEyePositon, Vertex &v)
 		Color specularColor = mesh.material.specular * specular * light.lightColor;
 		v.lightingColor = emissiveColor + ambientColor + diffuseColor + specularColor;
 	}
-		
+
 
 	//
-	
+
 }
-Color ReadTexture(int uIndex, int vIndex, Gdiplus::Color *color)
+Color ReadTexture(int uIndex, int vIndex, Gdiplus::Color * color)
 {
 	int u = MathTools::Range(uIndex, 0, textureWidth - 1);
-	int v = MathTools::Range(vIndex, 0, textureHeight- 1);
+	int v = MathTools::Range(vIndex, 0, textureHeight - 1);
 
-	byte r = textureBuffer[v* textureWidth * 3 + (u + 1) * 3 - 3];
-	byte g = textureBuffer[v* textureWidth * 3 + (u + 1) * 3 - 2];
+	byte r = textureBuffer[v * textureWidth * 3 + (u + 1) * 3 - 3];
+	byte g = textureBuffer[v * textureWidth * 3 + (u + 1) * 3 - 2];
 	byte b = textureBuffer[v * textureWidth * 3 + (u + 1) * 3 - 1];
 
-	return Color(r , g , b );
+	return Color(r, g, b);
 
 }
 
@@ -795,8 +816,8 @@ Gdiplus::Color TransFormToGdiColor(Color color)
 void SetBackBuff(int uIndex, int vIndex, Gdiplus::Color color)
 {
 	backBuffer[vIndex * SCREEN_WIDTH * 3 + (uIndex + 1) * 3 - 3] = color.GetR();
-	backBuffer[vIndex *  SCREEN_WIDTH * 3 + (uIndex + 1) * 3 - 2] = color.GetG();
-	backBuffer[vIndex *  SCREEN_WIDTH * 3 + (uIndex + 1) * 3 - 1] = color.GetB();
+	backBuffer[vIndex * SCREEN_WIDTH * 3 + (uIndex + 1) * 3 - 2] = color.GetG();
+	backBuffer[vIndex * SCREEN_WIDTH * 3 + (uIndex + 1) * 3 - 1] = color.GetB();
 }
 
 
